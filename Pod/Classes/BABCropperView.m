@@ -236,7 +236,7 @@ static UIImage* BABCropperViewCroppedAndScaledImageWithCropRect(UIImage *image, 
     
     [super layoutSubviews];
     
-    if(self.cropSize.width > 0 && self.cropSize.height > 0) {
+    if (self.cropSize.width > 0 && self.cropSize.height > 0) {
         
         CGSize scaledSize = BABCropperViewScaledSizeToFitSize(self.cropSize, self.bounds.size);
         self.scaledCropSize = scaledSize;
@@ -265,6 +265,8 @@ static UIImage* BABCropperViewCroppedAndScaledImageWithCropRect(UIImage *image, 
         [self updateMaskView];
         [self updateScrollViewContentInset];
         [self centerImageInScrollView:self.scrollView];
+        
+        [self.scrollView setContentOffset:CGPointMake(0.0f, 0.0f) animated:NO];
     }
 }
 
@@ -353,8 +355,8 @@ static UIImage* BABCropperViewCroppedAndScaledImageWithCropRect(UIImage *image, 
     CGFloat contentSizeWidth = scrollView.contentSize.width + scrollView.contentInset.left + scrollView.contentInset.right;
     CGFloat contentSizeHeight = scrollView.contentSize.height + scrollView.contentInset.top + scrollView.contentInset.bottom;
     
-    CGFloat offsetX = (scrollView.bounds.size.width < contentSizeWidth)? (scrollView.bounds.size.width - contentSizeWidth) * 0.5f : 0.0f;
-    CGFloat offsetY = (scrollView.bounds.size.height < contentSizeHeight)? (scrollView.bounds.size.height - contentSizeHeight) * 0.5f : 0.0f;
+    CGFloat offsetX = (scrollView.bounds.size.width > contentSizeWidth) ? (scrollView.bounds.size.width - contentSizeWidth) * 0.5f : 0.0f;
+    CGFloat offsetY = (scrollView.bounds.size.height > contentSizeHeight) ? (scrollView.bounds.size.height - contentSizeHeight) * 0.5f : 0.0f;
     
     self.imageView.center = CGPointMake(scrollView.contentSize.width * 0.5 + offsetX, scrollView.contentSize.height * 0.5 + offsetY);
 }
