@@ -23,7 +23,7 @@
     
     [super viewDidLoad];
     
-    self.cropperView.cropSize = CGSizeMake(960.0f, 480.0f);
+    self.cropperView.cropSize = CGSizeMake(320.0f, 140.0f);
     self.cropperView.cropsImageToCircle = NO;
 }
 
@@ -81,6 +81,8 @@
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info {
     
     UIImage *image = info[UIImagePickerControllerOriginalImage];
+    self.cropperView.startZoomedToFill = YES;
+//    self.cropperView.allowsNegativeSpaceInCroppedImage = YES;
     self.cropperView.image = image;
     
     [picker dismissViewControllerAnimated:YES completion:nil];

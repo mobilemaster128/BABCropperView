@@ -249,7 +249,6 @@ static UIImage* BABCropperViewCroppedAndScaledImageWithCropRect(UIImage *image, 
         displayCropRect.origin.y += self.cropDisplayOffset.vertical;
         self.displayCropRect = displayCropRect;
         
-        
         if(self.cropsImageToCircle) {
             
             self.borderView.layer.cornerRadius = CGRectGetWidth(self.borderView.bounds)/2.0f;
@@ -266,7 +265,10 @@ static UIImage* BABCropperViewCroppedAndScaledImageWithCropRect(UIImage *image, 
         [self updateScrollViewContentInset];
         [self centerImageInScrollView:self.scrollView];
         
-        [self.scrollView setContentOffset:CGPointMake(0.0f, 0.0f) animated:NO];
+        CGFloat initialOffsetX = (self.scrollView.zoomScale * CGRectGetWidth(self.imageView.bounds) - CGRectGetWidth(self.scrollView.bounds)) / 2.0f;
+        CGFloat initialOffsetY = (self.scrollView.zoomScale * CGRectGetHeight(self.imageView.bounds) - CGRectGetHeight(self.scrollView.bounds)) / 2.0f;
+        
+        [self.scrollView setContentOffset:CGPointMake(initialOffsetX, initialOffsetY) animated:NO];
     }
 }
 
@@ -281,43 +283,28 @@ static UIImage* BABCropperViewCroppedAndScaledImageWithCropRect(UIImage *image, 
         CGFloat imageWidth = self.image.size.width;
         CGFloat imageHeight = self.image.size.height;
         
-        CGFloat scaleBasedOnHeight = self.displayCropSize.height/imageHeight;
+        CGFloat scaleScreenOnWidth = scrollViewWidth/imageWidth;
+        CGFloat scaleScreenOnHeight = scrollViewHeight/imageHeight;
+        
         CGFloat scaleBasedOnWidth = self.displayCropSize.width/imageWidth;
+        CGFloat scaleBasedOnHeight = self.displayCropSize.height/imageHeight;
         
-        CGFloat minimumZoomScaleBasedOnHeight = self.allowsNegativeSpaceInCroppedImage ? scaleBasedOnWidth : scaleBasedOnHeight;
-        CGFloat minimumZoomScalescaleBasedOnWidth = self.allowsNegativeSpaceInCroppedImage ? scaleBasedOnHeight : scaleBasedOnWidth;
+        CGFloat screenRatio = scrollViewWidth / scrollViewHeight;
+        CGFloat imageRatio = imageWidth / imageHeight;
+        CGFloat cropRatio = self.cropSize.width / self.cropSize.height;
         
-        CGFloat startingZoomScale;
+        CGFloat minimumZoomScaleBased = self.allowsNegativeSpaceInCroppedImage ?
+        cropRatio > imageRatio ? scaleBasedOnHeight : scaleBasedOnWidth :
+        cropRatio > imageRatio ? scaleBasedOnWidth : scaleBasedOnHeight;
+        CGFloat minimumZoomScaleScreen = self.allowsNegativeSpaceInCroppedImage ?
+        screenRatio > imageRatio ? scaleScreenOnHeight : scaleScreenOnWidth :
+        screenRatio > imageRatio ? scaleScreenOnWidth : scaleScreenOnHeight;
         
-        if(imageViewHeight > imageViewWidth) { //portrait image
-            
-            if(scrollViewHeight > scrollViewWidth && self.cropSize.width/self.cropSize.height < imageViewWidth/imageViewHeight) {
-                
-                self.scrollView.minimumZoomScale = minimumZoomScaleBasedOnHeight;
-                startingZoomScale = minimumZoomScalescaleBasedOnWidth;
-            }
-            else {
-                
-                self.scrollView.minimumZoomScale = minimumZoomScalescaleBasedOnWidth;
-                startingZoomScale = minimumZoomScaleBasedOnHeight;
-            }
-        }
-        else { //landscape image
-            
-            if((scrollViewHeight >= scrollViewWidth) || (self.cropSize.width/self.cropSize.height < imageViewWidth/imageViewHeight)) {
-                
-                self.scrollView.minimumZoomScale = minimumZoomScaleBasedOnHeight;
-                startingZoomScale = minimumZoomScalescaleBasedOnWidth;
-            }
-            else {
-                
-                self.scrollView.minimumZoomScale = minimumZoomScalescaleBasedOnWidth;
-                startingZoomScale = minimumZoomScaleBasedOnHeight;
-            }
-        }
+        CGFloat startingZoomScale = minimumZoomScaleScreen;
         
+        self.scrollView.minimumZoomScale = minimumZoomScaleBased;
         self.scrollView.maximumZoomScale = BABCropperViewMaximumZoomScale;
-        self.scrollView.zoomScale = self.startZoomedToFill ? startingZoomScale : self.scrollView.minimumZoomScale;
+        self.scrollView.zoomScale = self.startZoomedToFill ? self.scrollView.minimumZoomScale : startingZoomScale;
     }
 }
 
